@@ -1,0 +1,23 @@
+{
+  "name": "react-native-pure-label",
+  "version": "1.0.0",
+  "description": "react-native label",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/musicode/react-native-pure-label.git"
+  },
+  "keywords": [
+    "react-native",
+    "label"
+  ],
+  "author": "musicode",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/musicode/react-native-pure-label/issues"
+  },
+  "homepage": "https://github.com/musicode/react-native-pure-label#readme"
+}
