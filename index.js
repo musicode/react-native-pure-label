@@ -33,11 +33,27 @@ export default class Label extends Component {
       )
     }
     else if (children && children.length > 1) {
-      children = (
-        <View style={{flex: 1}}>
-          {children}
-        </View>
-      )
+      let isString = true
+      for (let i = 0, len = children.length; i < len; i++) {
+        if (typeof children[i] !== 'string') {
+          isString = false
+          break
+        }
+      }
+      if (isString) {
+        children = (
+          <Text style={textStyle}>
+            {children.join('')}
+          </Text>
+        )
+      }
+      else {
+        children = (
+          <View style={{flex: 1}}>
+            {children}
+          </View>
+        )
+      }
     }
 
     return (
