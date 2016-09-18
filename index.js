@@ -13,7 +13,7 @@ import {
 export default class Label extends Component {
 
   static propTypes = {
-    ...View.propTypes,
+    ...Text.propTypes,
     textStyle: Text.propTypes.style,
   }
 
@@ -23,11 +23,12 @@ export default class Label extends Component {
       children,
       style,
       textStyle,
+      ...props,
     } = this.props
 
     if (typeof children === 'string') {
       children = (
-        <Text style={textStyle}>
+        <Text style={textStyle} {...props}>
           {children}
         </Text>
       )
@@ -42,7 +43,7 @@ export default class Label extends Component {
       }
       if (isString) {
         children = (
-          <Text style={textStyle}>
+          <Text style={textStyle} {...props}>
             {children.join('')}
           </Text>
         )
@@ -57,10 +58,7 @@ export default class Label extends Component {
     }
 
     return (
-      <View
-        {...this.props}
-        style={style}
-      >
+      <View style={style}>
         {children}
       </View>
     )
