@@ -26,7 +26,7 @@ export default class Label extends Component {
       ...props,
     } = this.props
 
-    if (typeof children === 'string') {
+    if (typeof children === 'string' || typeof children === 'number') {
       children = (
         <Text style={textStyle} {...props}>
           {children}
