@@ -2,7 +2,6 @@
 
 import React, {
   Component,
-  PropTypes,
 } from 'react'
 
 import {
@@ -34,10 +33,10 @@ export default class Label extends Component {
       )
     }
     else if (children && children.length > 1) {
-      let isString = true
+      let isString = false
       for (let i = 0, len = children.length; i < len; i++) {
-        if (typeof children[i] !== 'string') {
-          isString = false
+        if (typeof children[i] === 'string') {
+          isString = true
           break
         }
       }
