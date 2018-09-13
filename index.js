@@ -22,7 +22,7 @@ export default class Label extends Component {
       children,
       style,
       textStyle,
-      ...props,
+      ...props
     } = this.props
 
     if (typeof children === 'string' || typeof children === 'number') {
