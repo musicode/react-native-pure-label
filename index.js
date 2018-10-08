@@ -7,7 +7,16 @@ import React, {
 import {
   View,
   Text,
+  Platform,
 } from 'react-native'
+
+let extraStyle = null
+
+if (Platform.OS === 'ios') {
+  extraStyle = {
+    fontFamily: 'PingFangSC-Regular'
+  }
+}
 
 export default class Label extends Component {
 
@@ -24,6 +33,18 @@ export default class Label extends Component {
       textStyle,
       ...props
     } = this.props
+
+    if (extraStyle) {
+      if (textStyle) {
+        textStyle = [
+          extraStyle,
+          textStyle
+        ]
+      }
+      else {
+        textStyle = extraStyle
+      }
+    }
 
     if (typeof children === 'string' || typeof children === 'number') {
       children = (
@@ -56,10 +77,15 @@ export default class Label extends Component {
       }
     }
 
-    return (
-      <View style={style}>
-        {children}
-      </View>
-    )
+    if (style) {
+      return (
+        <View style={style}>
+          {children}
+        </View>
+      )
+    }
+
+    return children
+
   }
 }
