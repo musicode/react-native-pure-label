@@ -10,12 +10,36 @@ import {
   Platform,
 } from 'react-native'
 
-let extraStyle = null
+let extraTextStyle = null
 
 if (Platform.OS === 'ios') {
-  extraStyle = {
+  extraTextStyle = {
     fontFamily: 'PingFangSC-Regular'
   }
+}
+
+let linkPattern = /(https?:\/\/[^\s\b]+|([a-z]+\.)?[-\w]+\.(com|cn|org|net|io))/i
+
+function parseToken(str) {
+  let result = []
+  let index = 0
+  let match
+  while (match = linkPattern.exec(str)) {
+    result.push({
+      text: str.substr(0, match.index)
+    })
+    result.push({
+      link: match[0]
+    })
+    index = match.index + match[0].length
+    str = str.substr(index)
+  }
+  if (str.length) {
+    result.push({
+      text: str
+    })
+  }
+  return result
 }
 
 export default class Label extends Component {
@@ -25,33 +49,40 @@ export default class Label extends Component {
     textStyle: Text.propTypes.style,
   }
 
+  static defaultProps = {
+
+  }
+
   render() {
 
     let {
       children,
       style,
       textStyle,
+      linkable,
+      linkText,
+      linkColor,
+      onLinkPress,
       ...props
     } = this.props
 
-    if (extraStyle) {
+    if (extraTextStyle) {
       if (textStyle) {
         textStyle = [
-          extraStyle,
+          extraTextStyle,
           textStyle
         ]
       }
       else {
-        textStyle = extraStyle
+        textStyle = extraTextStyle
       }
     }
 
-    if (typeof children === 'string' || typeof children === 'number') {
-      children = (
-        <Text style={textStyle} {...props}>
-          {children}
-        </Text>
-      )
+    if (typeof children === 'string') {
+      // nothing to do
+    }
+    else if (typeof children === 'number') {
+      children = '' + children
     }
     else if (children && children.length > 1) {
       let isString = false
@@ -62,17 +93,56 @@ export default class Label extends Component {
         }
       }
       if (isString) {
-        children = (
-          <Text style={textStyle} {...props}>
-            {children.join('')}
-          </Text>
-        )
+        children = children.join('')
       }
       else {
         children = (
           <View style={{flex: 1}}>
             {children}
           </View>
+        )
+      }
+    }
+
+    if (typeof children === 'string') {
+      if (linkable) {
+        let tokens = parseToken(children)
+        if (tokens.length > 1) {
+          children = (
+            <Text style={textStyle} {...props}>
+              {
+                tokens.map(token => {
+                  let text, style, onPress
+                  if (token.link) {
+                    text = linkText || token.link
+                    style = {
+                      color: linkColor
+                    }
+                    if (onLinkPress) {
+                      onPress = () => {
+                        onLinkPress(token.link)
+                      }
+                    }
+                  }
+                  else {
+                    text = token.text
+                  }
+                  return (
+                    <Text style={style} onPress={onPress}>
+                      {text}
+                    </Text>
+                  )
+                })
+              }
+            </Text>
+          )
+        }
+      }
+      if (typeof children === 'string') {
+        children = (
+          <Text style={textStyle} {...props}>
+            {children}
+          </Text>
         )
       }
     }
