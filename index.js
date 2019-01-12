@@ -18,7 +18,7 @@ if (Platform.OS === 'ios') {
   }
 }
 
-let linkPattern = /(https?:\/\/[^\s\b]+|([a-z]+\.)?[-\w]+\.(com|cn|org|net|io))/i
+let linkPattern = /(https?:\/\/[^\s\b]+|([a-z]+\.)?[-\w]+\.(com|cn|org|net|io)[^\s\b]*)/i
 
 function parseLink(str, linkText) {
   let result = []
@@ -114,7 +114,7 @@ export default class Label extends Component {
           children = (
             <Text style={textStyle} {...props}>
               {
-                tokens.map(token => {
+                tokens.map((token, index) => {
                   let style, onPress
                   if (token.link) {
                     style = linkStyle
@@ -125,7 +125,7 @@ export default class Label extends Component {
                     }
                   }
                   return (
-                    <Text style={style} onPress={onPress}>
+                    <Text key={`${index}-${token.link || token.text}`} style={style} onPress={onPress}>
                       {token.text}
                     </Text>
                   )
