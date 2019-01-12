@@ -20,7 +20,7 @@ if (Platform.OS === 'ios') {
 
 let linkPattern = /(https?:\/\/[^\s\b]+|([a-z]+\.)?[-\w]+\.(com|cn|org|net|io))/i
 
-function parseToken(str) {
+function parseLink(str, linkText) {
   let result = []
   let index = 0
   let match
@@ -29,7 +29,8 @@ function parseToken(str) {
       text: str.substr(0, match.index)
     })
     result.push({
-      link: match[0]
+      link: match[0],
+      text: linkText || match[0],
     })
     index = match.index + match[0].length
     str = str.substr(index)
@@ -53,6 +54,8 @@ export default class Label extends Component {
 
   }
 
+  static parseLink = parseLink
+
   render() {
 
     let {
@@ -61,7 +64,7 @@ export default class Label extends Component {
       textStyle,
       linkable,
       linkText,
-      linkColor,
+      linkStyle,
       onLinkPress,
       ...props
     } = this.props
@@ -106,30 +109,24 @@ export default class Label extends Component {
 
     if (typeof children === 'string') {
       if (linkable) {
-        let tokens = parseToken(children)
+        let tokens = parseLink(children, linkText)
         if (tokens.length > 1) {
           children = (
             <Text style={textStyle} {...props}>
               {
                 tokens.map(token => {
-                  let text, style, onPress
+                  let style, onPress
                   if (token.link) {
-                    text = linkText || token.link
-                    style = {
-                      color: linkColor
-                    }
+                    style = linkStyle
                     if (onLinkPress) {
                       onPress = () => {
                         onLinkPress(token.link)
                       }
                     }
                   }
-                  else {
-                    text = token.text
-                  }
                   return (
                     <Text style={style} onPress={onPress}>
-                      {text}
+                      {token.text}
                     </Text>
                   )
                 })
