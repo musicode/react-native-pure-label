@@ -18,13 +18,11 @@ if (Platform.OS === 'ios') {
   }
 }
 
-let linkPattern = /(https?:\/\/[^\s\b]+|([a-z]+\.)?[-\w]+\.(com|cn|org|net|io)[^\s\b]*)/i
-
 function parseLink(str, linkText) {
   let result = []
   let index = 0
   let match
-  while (match = linkPattern.exec(str)) {
+  while (match = Label.linkPattern.exec(str)) {
     result.push({
       text: str.substr(0, match.index)
     })
@@ -53,6 +51,8 @@ export default class Label extends Component {
   static defaultProps = {
 
   }
+
+  static linkPattern = /(https?:\/\/[^\s\b\(\)（）,，\u4e00-\u9fa5]+|([a-z]+\.)?[-\w]+\.(com|cn|org|net|io)[^\s\b\(\)（）,，\u4e00-\u9fa5]*)/i
 
   static parseLink = parseLink
 
