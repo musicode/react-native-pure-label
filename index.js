@@ -52,7 +52,8 @@ export default class Label extends Component {
 
   }
 
-  static linkPattern = /(https?:\/\/[^\s\b\(\)（）,，.。\u4e00-\u9fa5]+|([a-z]+\.)?[-\w]+\.(com|cn|org|net|io)[^\s\b\(\)（）,，.。\u4e00-\u9fa5]*)/i
+  // 不能加 .，因为链接里可能有扩展名
+  static linkPattern = /(https?:\/\/[^\s\b\(\)（）,，。\u4e00-\u9fa5]+|([a-z]+\.)?[-\w]+\.(com|cn|org|net|io)[^\s\b\(\)（）,，。\u4e00-\u9fa5]*)/i
 
   static parseLink = parseLink
 
