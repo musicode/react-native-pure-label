@@ -145,6 +145,10 @@ export default class Label extends Component {
       }
     }
 
+    if (!children) {
+      return null
+    }
+
     if (style) {
       return (
         <View style={style}>
