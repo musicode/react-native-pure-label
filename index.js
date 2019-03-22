@@ -1,7 +1,7 @@
 'use strict'
 
 import React, {
-  Component,
+  PureComponent,
 } from 'react'
 
 import {
@@ -9,6 +9,8 @@ import {
   Text,
   Platform,
 } from 'react-native'
+
+import * as patternParser from '@musicode/pattern-parser'
 
 let extraTextStyle = null
 
@@ -18,30 +20,7 @@ if (Platform.OS === 'ios') {
   }
 }
 
-function parseLink(str, linkText) {
-  let result = []
-  let index = 0
-  let match
-  while (match = Label.linkPattern.exec(str)) {
-    result.push({
-      text: str.substr(0, match.index)
-    })
-    result.push({
-      link: match[0],
-      text: linkText || match[0],
-    })
-    index = match.index + match[0].length
-    str = str.substr(index)
-  }
-  if (str.length) {
-    result.push({
-      text: str
-    })
-  }
-  return result
-}
-
-export default class Label extends Component {
+export default class Label extends PureComponent {
 
   static propTypes = {
     ...Text.propTypes,
@@ -52,11 +31,6 @@ export default class Label extends Component {
 
   }
 
-  // 不能加 .，因为链接里可能有扩展名
-  static linkPattern = /(https?:\/\/[^\s\b\(\)（）,，。\u4e00-\u9fa5]+|([a-z]+\.)?[-\w]+\.(com|cn|org|net|io)[^\s\b\(\)（）,，。\u4e00-\u9fa5]*)/i
-
-  static parseLink = parseLink
-
   render() {
 
     let {
@@ -64,9 +38,19 @@ export default class Label extends Component {
       style,
       textStyle,
       linkable,
-      linkText,
-      linkStyle,
-      onLinkPress,
+
+      telText,
+      telStyle,
+      onTelPress,
+
+      urlText,
+      urlStyle,
+      onUrlPress,
+
+      emailText,
+      emailStyle,
+      onEmailPress,
+
       ...props
     } = this.props
 
@@ -110,7 +94,7 @@ export default class Label extends Component {
 
     if (typeof children === 'string') {
       if (linkable) {
-        let tokens = parseLink(children, linkText)
+        let tokens = patternParser.parseAll(children)
         if (tokens.length > 1) {
           children = (
             <Text style={textStyle} {...props}>
@@ -118,15 +102,48 @@ export default class Label extends Component {
                 tokens.map((token, index) => {
                   let style, onPress
                   if (token.link) {
-                    style = linkStyle
-                    if (onLinkPress) {
-                      onPress = () => {
-                        onLinkPress(token.link)
+
+                    if (token.type === 'tel') {
+                      style = telStyle
+                      if (telText) {
+                        token.text = telText
+                      }
+                      if (onTelPress) {
+                        onPress = () => {
+                          onTelPress(token.link)
+                        }
                       }
                     }
+                    else if (token.type === 'url') {
+                      style = urlStyle
+                      if (urlText) {
+                        token.text = urlText
+                      }
+                      if (onUrlPress) {
+                        onPress = () => {
+                          onUrlPress(token.link)
+                        }
+                      }
+                    }
+                    else if (token.type === 'email') {
+                      style = emailStyle
+                      if (emailText) {
+                        token.text = emailText
+                      }
+                      if (onEmailPress) {
+                        onPress = () => {
+                          onEmailPress(token.link)
+                        }
+                      }
+                    }
+
                   }
                   return (
-                    <Text key={`${index}-${token.link || token.text}`} style={style} onPress={onPress}>
+                    <Text
+                      key={`${index}-${token.link || token.text}`}
+                      style={style}
+                      onPress={onPress}
+                    >
                       {token.text}
                     </Text>
                   )
