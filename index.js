@@ -10,6 +10,7 @@ import {
   Platform,
 } from 'react-native'
 
+import PropTypes from 'prop-types'
 import * as patternParser from '@musicode/pattern-parser'
 
 let extraTextStyle = null
@@ -22,13 +23,90 @@ if (Platform.OS === 'ios') {
 
 export default class Label extends PureComponent {
 
-  static propTypes = {
-    ...Text.propTypes,
-    textStyle: Text.propTypes.style,
+  state = {
+    measured: false,
+    showAllText: false,
+    shouldShowReadMore: false,
   }
 
-  static defaultProps = {
+  static propTypes = {
+    ...Text.propTypes,
+    foldable: PropTypes.bool,
+    textStyle: Text.propTypes.style,
+    renderMoreButton: PropTypes.func,
+    renderLessButton: PropTypes.func,
+  }
 
+  static defaultProps = {}
+
+  componentDidMount() {
+
+    this.hasMounted = true
+
+    let { foldable } = this.props
+
+    if (!foldable) {
+      return
+    }
+
+    requestAnimationFrame(() => {
+
+      if (!this.hasMounted) {
+        return
+      }
+
+      this.refs.text.measure((x, y, w, h) => {
+
+        if (!this.hasMounted) {
+          return
+        }
+
+        let fullHeight = h
+        this.setState(
+          {
+            measured: true,
+          },
+          () => {
+            requestAnimationFrame(() => {
+
+              if (!this.hasMounted) {
+                return
+              }
+
+              this.refs.text.measure((x, y, w, h) => {
+
+                if (!this.hasMounted) {
+                  return
+                }
+
+                let limitedHeight = h
+
+                if (fullHeight > limitedHeight) {
+                  this.setState({
+                    shouldShowReadMore: true
+                  })
+                }
+
+              })
+
+            })
+          }
+        )
+
+      })
+
+    })
+
+  }
+
+  componentWillUnmount() {
+    this.hasMounted = false
+  }
+
+  handleTogglePress = () => {
+    this.setState({
+      showAllText: !this.state.showAllText
+    })
   }
 
   render() {
@@ -51,8 +129,18 @@ export default class Label extends PureComponent {
       emailStyle,
       onEmailPress,
 
+      foldable,
+      renderMoreButton,
+      renderLessButton,
+      numberOfLines,
       ...props
     } = this.props
+
+    let {
+      measured,
+      showAllText,
+      shouldShowReadMore,
+    } = this.state
 
     if (extraTextStyle) {
       if (textStyle) {
@@ -66,6 +154,31 @@ export default class Label extends PureComponent {
       }
     }
 
+    let textProps = {
+      style: textStyle,
+      ...props,
+      ref: 'text',
+    }
+
+    let toggleButton
+
+    if (foldable) {
+      if (!numberOfLines) {
+        throw new Error("Label's numberOfLines prop is required.")
+      }
+      if (measured && !showAllText) {
+        textProps.numberOfLines = numberOfLines
+      }
+      if (shouldShowReadMore) {
+        toggleButton = showAllText
+          ? renderLessButton(this.handleTogglePress)
+          : renderMoreButton(this.handleTogglePress)
+      }
+    }
+    else if (numberOfLines) {
+      textProps.numberOfLines = numberOfLines
+    }
+
     if (typeof children === 'string') {
       // nothing to do
     }
@@ -73,10 +186,10 @@ export default class Label extends PureComponent {
       children = '' + children
     }
     else if (children && children.length > 1) {
-      let isString = false
+      let isString = true
       for (let i = 0, len = children.length; i < len; i++) {
-        if (typeof children[i] === 'string') {
-          isString = true
+        if (typeof children[i] !== 'string') {
+          isString = false
           break
         }
       }
@@ -85,9 +198,11 @@ export default class Label extends PureComponent {
       }
       else {
         children = (
-          <View style={{flex: 1}}>
+          <Text
+            {...textProps}
+          >
             {children}
-          </View>
+          </Text>
         )
       }
     }
@@ -97,7 +212,9 @@ export default class Label extends PureComponent {
         let tokens = patternParser.parseAll(children)
         if (tokens.length > 1) {
           children = (
-            <Text style={textStyle} {...props}>
+            <Text
+              {...textProps}
+            >
               {
                 tokens.map((token, index) => {
                   let style, onPress
@@ -155,7 +272,9 @@ export default class Label extends PureComponent {
       }
       if (typeof children === 'string') {
         children = (
-          <Text style={textStyle} {...props}>
+          <Text
+            {...textProps}
+          >
             {children}
           </Text>
         )
@@ -166,10 +285,11 @@ export default class Label extends PureComponent {
       return null
     }
 
-    if (style) {
+    if (style || toggleButton) {
       return (
         <View style={style}>
           {children}
+          {toggleButton}
         </View>
       )
     }

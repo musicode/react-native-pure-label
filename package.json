@@ -1,6 +1,6 @@
 {
   "name": "react-native-pure-label",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "description": "react-native label",
   "main": "index.js",
   "scripts": {
@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/musicode/react-native-pure-label#readme",
   "dependencies": {
-    "@musicode/pattern-parser": "0.0.1"
+    "prop-types": "^15.5.10",
+    "@musicode/pattern-parser": "0.0.2"
   }
 }
