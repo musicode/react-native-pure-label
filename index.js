@@ -81,7 +81,8 @@ export default class Label extends PureComponent {
 
                 let limitedHeight = h
 
-                if (fullHeight > limitedHeight) {
+                // 怕有小范围数值的偏差
+                if (fullHeight - limitedHeight > 5) {
                   this.setState({
                     shouldShowReadMore: true
                   })
