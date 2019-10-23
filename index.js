@@ -15,7 +15,10 @@ import * as patternParser from '@musicode/pattern-parser'
 
 let extraTextStyle = null
 
+// android 的 measure 方法返回全是 undefined
+let measureMethod = 'measureInWindow'
 if (Platform.OS === 'ios') {
+  measureMethod = 'measure'
   extraTextStyle = {
     fontFamily: 'PingFangSC-Regular'
   }
@@ -55,13 +58,14 @@ export default class Label extends PureComponent {
         return
       }
 
-      this.refs.text.measure((x, y, w, h) => {
+      this.refs.text[measureMethod]((x, y, w, h) => {
 
         if (!this.hasMounted) {
           return
         }
 
         let fullHeight = h
+
         this.setState(
           {
             measured: true,
@@ -73,7 +77,7 @@ export default class Label extends PureComponent {
                 return
               }
 
-              this.refs.text.measure((x, y, w, h) => {
+              this.refs.text[measureMethod]((x, y, w, h) => {
 
                 if (!this.hasMounted) {
                   return
