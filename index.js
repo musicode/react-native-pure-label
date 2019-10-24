@@ -91,6 +91,11 @@ export default class Label extends PureComponent {
                     shouldShowReadMore: true
                   })
                 }
+                else {
+                  this.setState({
+                    showAllText: true,
+                  })
+                }
 
               })
 
@@ -285,7 +290,6 @@ export default class Label extends PureComponent {
         )
       }
     }
-
     if (!children) {
       return null
     }
