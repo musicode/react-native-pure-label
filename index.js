@@ -167,61 +167,18 @@ export default class Label extends PureComponent {
     let textProps = {
       style: textStyle,
       ...props,
+    }
+
+    let textRootProps = {
+      ...textProps,
       ref: 'text',
     }
 
-    let toggleButton
-
-    if (foldable) {
-      if (!numberOfLines) {
-        throw new Error("Label's numberOfLines prop is required.")
-      }
-      if (measured && !showAllText) {
-        textProps.numberOfLines = numberOfLines
-      }
-      if (shouldShowReadMore) {
-        toggleButton = showAllText
-          ? renderLessButton(this.handleTogglePress)
-          : renderMoreButton(this.handleTogglePress)
-      }
-    }
-    else if (numberOfLines) {
-      textProps.numberOfLines = numberOfLines
-    }
-
-    if (typeof children === 'string') {
-      // nothing to do
-    }
-    else if (typeof children === 'number') {
-      children = '' + children
-    }
-    else if (children && children.length > 1) {
-      let isString = true
-      for (let i = 0, len = children.length; i < len; i++) {
-        if (typeof children[i] !== 'string') {
-          isString = false
-          break
-        }
-      }
-      if (isString) {
-        children = children.join('')
-      }
-      else {
-        children = (
-          <Text
-            {...textProps}
-          >
-            {children}
-          </Text>
-        )
-      }
-    }
-
-    if (typeof children === 'string') {
+    let parseString = function (text, textProps) {
       if (linkable) {
-        let tokens = patternParser.parseAll(children)
+        let tokens = patternParser.parseAll(text)
         if (tokens.length > 1) {
-          children = (
+          return (
             <Text
               {...textProps}
             >
@@ -280,16 +237,65 @@ export default class Label extends PureComponent {
           )
         }
       }
-      if (typeof children === 'string') {
+      return (
+        <Text
+          {...textProps}
+        >
+          {text}
+        </Text>
+      )
+    }
+
+    let toggleButton
+
+    if (foldable) {
+      if (!numberOfLines) {
+        throw new Error("Label's numberOfLines prop is required.")
+      }
+      if (measured && !showAllText) {
+        textRootProps.numberOfLines = numberOfLines
+      }
+      if (shouldShowReadMore) {
+        toggleButton = showAllText
+          ? renderLessButton(this.handleTogglePress)
+          : renderMoreButton(this.handleTogglePress)
+      }
+    }
+    else if (numberOfLines) {
+      textRootProps.numberOfLines = numberOfLines
+    }
+
+    if (typeof children === 'string') {
+      children = parseString(children, textRootProps)
+    }
+    else if (typeof children === 'number') {
+      children = parseString('' + children, textRootProps)
+    }
+    else if (children && children.length > 1) {
+      let nodes = []
+      for (let i = 0, len = children.length; i < len; i++) {
+        let node = children[i]
+        if (typeof children[i] === 'string') {
+          node = parseString(children[i], textProps)
+        }
+        else if (typeof children[i] === 'number') {
+          node = parseString('' + children[i], textProps)
+        }
+        if (node) {
+          nodes.push(node)
+        }
+      }
+      if (nodes.length > 0) {
         children = (
           <Text
-            {...textProps}
+            {...textRootProps}
           >
-            {children}
+            {nodes}
           </Text>
         )
       }
     }
+
     if (!children) {
       return null
     }
