@@ -42,75 +42,82 @@ export default class Label extends PureComponent {
 
   static defaultProps = {}
 
-  componentDidMount() {
+  componentWillUnmount() {
+    this.hasLayouted = false
+  }
 
-    this.hasMounted = true
+  refreshTextLayout = () => {
+
+    this.hasLayouted = true
+
+    let fullHeight = this.textLayout.height
+
+    this.setState(
+      {
+        measured: true,
+      },
+      () => {
+        requestAnimationFrame(() => {
+
+          if (!this.hasLayouted) {
+            return
+          }
+
+          this.refs.text[measureMethod]((x, y, w, h) => {
+
+            if (!this.hasLayouted) {
+              return
+            }
+
+            let limitedHeight = h
+
+            // 怕有小范围数值的偏差
+            if (fullHeight - limitedHeight > 5) {
+              this.setState({
+                shouldShowReadMore: true
+              })
+            }
+            else {
+              this.setState({
+                showAllText: true,
+              })
+            }
+
+          })
+
+        })
+      }
+    )
+
+  }
+
+  handleTextLayout = event => {
 
     let { foldable } = this.props
-
     if (!foldable) {
       return
     }
 
-    requestAnimationFrame(() => {
+    // 已经刷新过布局了
+    if (this.hasLayouted) {
+      return
+    }
 
-      if (!this.hasMounted) {
-        return
-      }
+    // 有时候（特别是文本很长时）会连续触发 onLayout
+    // 这里只取最后一次触发的数据
+    let { layout } = event.nativeEvent
+    this.textLayout = layout
 
-      this.refs.text[measureMethod]((x, y, w, h) => {
+    // 过滤
+    if (this.layoutTimer) {
+      clearTimeout(this.layoutTimer)
+    }
 
-        if (!this.hasMounted) {
-          return
-        }
+    this.layoutTimer = setTimeout(
+      this.refreshTextLayout,
+      100
+    )
 
-        let fullHeight = h
-
-        this.setState(
-          {
-            measured: true,
-          },
-          () => {
-            requestAnimationFrame(() => {
-
-              if (!this.hasMounted) {
-                return
-              }
-
-              this.refs.text[measureMethod]((x, y, w, h) => {
-
-                if (!this.hasMounted) {
-                  return
-                }
-
-                let limitedHeight = h
-
-                // 怕有小范围数值的偏差
-                if (fullHeight - limitedHeight > 5) {
-                  this.setState({
-                    shouldShowReadMore: true
-                  })
-                }
-                else {
-                  this.setState({
-                    showAllText: true,
-                  })
-                }
-
-              })
-
-            })
-          }
-        )
-
-      })
-
-    })
-
-  }
-
-  componentWillUnmount() {
-    this.hasMounted = false
   }
 
   handleTogglePress = () => {
@@ -172,6 +179,7 @@ export default class Label extends PureComponent {
     let textRootProps = {
       ...textProps,
       ref: 'text',
+      onLayout: this.handleTextLayout
     }
 
     let parseString = function (text, textProps) {
@@ -276,9 +284,11 @@ export default class Label extends PureComponent {
       for (let i = 0, len = children.length; i < len; i++) {
         let node = children[i]
         if (typeof children[i] === 'string') {
+          textProps.key = `${i}_${children[i]}`
           node = parseString(children[i], textProps)
         }
         else if (typeof children[i] === 'number') {
+          textProps.key = `${i}_${children[i]}`
           node = parseString('' + children[i], textProps)
         }
         if (node) {
