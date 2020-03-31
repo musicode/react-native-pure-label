@@ -185,7 +185,7 @@ export default class Label extends PureComponent {
     let parseString = function (text, textProps) {
       if (linkable) {
         let tokens = patternParser.parseAll(text)
-        if (tokens.length > 1) {
+        if (tokens.length >= 1) {
           return (
             <Text
               {...textProps}
