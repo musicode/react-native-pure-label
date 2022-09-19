@@ -33,9 +33,8 @@ export default class Label extends PureComponent {
   }
 
   static propTypes = {
-    ...Text.propTypes,
     foldable: PropTypes.bool,
-    textStyle: Text.propTypes.style,
+    textStyle: PropTypes.any,
     renderMoreButton: PropTypes.func,
     renderLessButton: PropTypes.func,
   }
