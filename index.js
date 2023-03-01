@@ -1,6 +1,7 @@
 'use strict'
 
 import React, {
+  createRef,
   PureComponent,
 } from 'react'
 
@@ -8,10 +9,12 @@ import {
   View,
   Text,
   Platform,
+  StyleSheet,
 } from 'react-native'
 
 import PropTypes from 'prop-types'
-import * as patternParser from '@musicode/pattern-parser'
+
+import { parseText } from '@yorkjs/pattern'
 
 let extraTextStyle = null
 
@@ -23,6 +26,12 @@ if (Platform.OS === 'ios') {
     fontFamily: 'PingFangSC-Regular'
   }
 }
+
+const styles = StyleSheet.create({
+  highlight: {
+    color: 'red',
+  }
+})
 
 export default class Label extends PureComponent {
 
@@ -40,6 +49,11 @@ export default class Label extends PureComponent {
   }
 
   static defaultProps = {}
+
+  constructor(props) {
+    super(props)
+    this.textRef = createRef()
+  }
 
   componentWillUnmount() {
     this.hasLayouted = false
@@ -62,7 +76,7 @@ export default class Label extends PureComponent {
             return
           }
 
-          this.refs.text[measureMethod]((x, y, w, h) => {
+          this.textRef.current[measureMethod]((x, y, w, h) => {
 
             if (!this.hasLayouted) {
               return
@@ -145,6 +159,12 @@ export default class Label extends PureComponent {
       emailStyle,
       onEmailPress,
 
+      imageText,
+      imageStyle,
+      onImagePress,
+
+      highlightStyle,
+
       foldable,
       renderMoreButton,
       renderLessButton,
@@ -177,13 +197,13 @@ export default class Label extends PureComponent {
 
     let textRootProps = {
       ...textProps,
-      ref: 'text',
+      ref: this.textRef,
       onLayout: this.handleTextLayout
     }
 
     let parseString = function (text, textProps) {
       if (linkable) {
-        let tokens = patternParser.parseAll(text)
+        let tokens = parseText(text)
         if (tokens.length >= 1) {
           return (
             <Text
@@ -191,51 +211,64 @@ export default class Label extends PureComponent {
             >
               {
                 tokens.map((token, index) => {
-                  let style, onPress
-                  if (token.link) {
+                  let text = token.text, style, onPress
 
-                    if (token.type === 'tel') {
-                      style = telStyle
-                      if (telText) {
-                        token.text = telText
-                      }
-                      if (onTelPress) {
-                        onPress = () => {
-                          onTelPress(token.link)
-                        }
+                  if (token.type === 'tel') {
+                    style = telStyle
+                    if (telText) {
+                      text = telText
+                    }
+                    if (onTelPress) {
+                      onPress = () => {
+                        onTelPress(token.data.tel)
                       }
                     }
-                    else if (token.type === 'url') {
-                      style = urlStyle
-                      if (urlText) {
-                        token.text = urlText
-                      }
-                      if (onUrlPress) {
-                        onPress = () => {
-                          onUrlPress(token.link)
-                        }
-                      }
-                    }
-                    else if (token.type === 'email') {
-                      style = emailStyle
-                      if (emailText) {
-                        token.text = emailText
-                      }
-                      if (onEmailPress) {
-                        onPress = () => {
-                          onEmailPress(token.link)
-                        }
-                      }
-                    }
-
                   }
+                  else if (token.type === 'url') {
+                    style = urlStyle
+                    if (urlText) {
+                      text = urlText
+                    }
+                    if (onUrlPress) {
+                      onPress = () => {
+                        onUrlPress(token.data.url)
+                      }
+                    }
+                  }
+                  else if (token.type === 'email') {
+                    style = emailStyle
+                    if (emailText) {
+                      text = emailText
+                    }
+                    if (onEmailPress) {
+                      onPress = () => {
+                        onEmailPress(token.data.email)
+                      }
+                    }
+                  }
+                  else if (token.type === 'image') {
+                    style = imageStyle
+                    if (imageText) {
+                      text = imageText
+                    }
+                    if (onImagePress) {
+                      onPress = () => {
+                        onImagePress(token.data.url)
+                      }
+                    }
+                  }
+                  else if (token.type === 'highlight') {
+                    style = highlightStyle || styles.highlight
+                    text = token.data.text
+                  }
+
                   return (
                     <Text
-                      key={`${index}-${token.link || token.text}`}
+                      key={`${index}-${token.text}`}
                       style={style}
                       onPress={onPress}
                     >
-                      {token.text}
+                      {text}
                     </Text>
                   )
                 })
