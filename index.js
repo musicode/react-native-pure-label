@@ -7,7 +7,6 @@ import React, {
 
 import {
   View,
-  Text,
   Platform,
 } from 'react-native'
 
@@ -19,10 +18,7 @@ import {
 
 let extraTextStyle = null
 
-// android 的 measure 方法返回全是 undefined
-let measureMethod = 'measureInWindow'
 if (Platform.OS === 'ios') {
-  measureMethod = 'measure'
   extraTextStyle = {
     fontFamily: 'PingFangSC-Regular'
   }
@@ -71,7 +67,7 @@ export default class Label extends PureComponent {
             return
           }
 
-          this.textRef.current[measureMethod]((x, y, w, h) => {
+          this.textRef.current.measure((x, y, w, h) => {
 
             if (!this.hasLayouted) {
               return
@@ -211,46 +207,32 @@ export default class Label extends PureComponent {
       textRootProps.numberOfLines = numberOfLines
     }
 
-    if (linkable) {
-      children = (
-        <StyledText
-          {...textRootProps}
+    children = (
+      <StyledText
+        {...textRootProps}
 
-          telText={telText}
-          telStyle={telStyle}
-          onTelPress={onTelPress}
+        patterns={linkable ? undefined : []}
+        telText={telText}
+        telStyle={telStyle}
+        onTelPress={onTelPress}
 
-          urlText={urlText}
-          urlStyle={urlStyle}
-          onUrlPress={onUrlPress}
+        urlText={urlText}
+        urlStyle={urlStyle}
+        onUrlPress={onUrlPress}
 
-          emailText={emailText}
-          emailStyle={emailStyle}
-          onEmailPress={onEmailPress}
+        emailText={emailText}
+        emailStyle={emailStyle}
+        onEmailPress={onEmailPress}
 
-          imageText={imageText}
-          imageStyle={imageStyle}
-          onImagePress={onImagePress}
+        imageText={imageText}
+        imageStyle={imageStyle}
+        onImagePress={onImagePress}
 
-          highlightStyle={highlightStyle}
-        >
-          {children}
-        </StyledText>
-      )
-    }
-    else {
-      children = (
-        <Text
-          {...textRootProps}
-        >
-          {children}
-        </Text>
-      )
-    }
-
-    if (!children) {
-      return null
-    }
+        highlightStyle={highlightStyle}
+      >
+        {children}
+      </StyledText>
+    )
 
     if (style || toggleButton) {
       return (
