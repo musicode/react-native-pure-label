@@ -9,12 +9,13 @@ import {
   View,
   Text,
   Platform,
-  StyleSheet,
 } from 'react-native'
 
 import PropTypes from 'prop-types'
 
-import { parseText } from '@yorkjs/pattern'
+import {
+  StyledText,
+} from '@react-native-hero/styled-text'
 
 let extraTextStyle = null
 
@@ -26,12 +27,6 @@ if (Platform.OS === 'ios') {
     fontFamily: 'PingFangSC-Regular'
   }
 }
-
-const styles = StyleSheet.create({
-  highlight: {
-    color: 'red',
-  }
-})
 
 export default class Label extends PureComponent {
 
@@ -190,100 +185,11 @@ export default class Label extends PureComponent {
       }
     }
 
-    let textProps = {
-      style: textStyle,
-      ...props,
-    }
-
     let textRootProps = {
-      ...textProps,
+      ...props,
+      style: textStyle,
       ref: this.textRef,
       onLayout: this.handleTextLayout
-    }
-
-    let parseString = function (text, textProps) {
-      if (linkable) {
-        let tokens = parseText(text)
-        if (tokens.length >= 1) {
-          return (
-            <Text
-              {...textProps}
-            >
-              {
-                tokens.map((token, index) => {
-                  let text = token.text, style, onPress
-
-                  if (token.type === 'tel') {
-                    style = telStyle
-                    if (telText) {
-                      text = telText
-                    }
-                    if (onTelPress) {
-                      onPress = () => {
-                        onTelPress(token.data.tel)
-                      }
-                    }
-                  }
-                  else if (token.type === 'url') {
-                    style = urlStyle
-                    if (urlText) {
-                      text = urlText
-                    }
-                    if (onUrlPress) {
-                      onPress = () => {
-                        onUrlPress(token.data.url)
-                      }
-                    }
-                  }
-                  else if (token.type === 'email') {
-                    style = emailStyle
-                    if (emailText) {
-                      text = emailText
-                    }
-                    if (onEmailPress) {
-                      onPress = () => {
-                        onEmailPress(token.data.email)
-                      }
-                    }
-                  }
-                  else if (token.type === 'image') {
-                    style = imageStyle
-                    if (imageText) {
-                      text = imageText
-                    }
-                    if (onImagePress) {
-                      onPress = () => {
-                        onImagePress(token.data.url)
-                      }
-                    }
-                  }
-                  else if (token.type === 'highlight') {
-                    style = highlightStyle || styles.highlight
-                    text = token.data.text
-                  }
-
-                  return (
-                    <Text
-                      key={`${index}-${token.text}`}
-                      style={style}
-                      onPress={onPress}
-                    >
-                      {text}
-                    </Text>
-                  )
-                })
-              }
-            </Text>
-          )
-        }
-      }
-      return (
-        <Text
-          {...textProps}
-        >
-          {text}
-        </Text>
-      )
     }
 
     let toggleButton
@@ -305,37 +211,41 @@ export default class Label extends PureComponent {
       textRootProps.numberOfLines = numberOfLines
     }
 
-    if (typeof children === 'string') {
-      children = parseString(children, textRootProps)
+    if (linkable) {
+      children = (
+        <StyledText
+          {...textRootProps}
+
+          telText={telText}
+          telStyle={telStyle}
+          onTelPress={onTelPress}
+
+          urlText={urlText}
+          urlStyle={urlStyle}
+          onUrlPress={onUrlPress}
+
+          emailText={emailText}
+          emailStyle={emailStyle}
+          onEmailPress={onEmailPress}
+
+          imageText={imageText}
+          imageStyle={imageStyle}
+          onImagePress={onImagePress}
+
+          highlightStyle={highlightStyle}
+        >
+          {children}
+        </StyledText>
+      )
     }
-    else if (typeof children === 'number') {
-      children = parseString('' + children, textRootProps)
-    }
-    else if (children && children.length > 1) {
-      let nodes = []
-      for (let i = 0, len = children.length; i < len; i++) {
-        let node = children[i]
-        if (typeof children[i] === 'string') {
-          textProps.key = `${i}_${children[i]}`
-          node = parseString(children[i], textProps)
-        }
-        else if (typeof children[i] === 'number') {
-          textProps.key = `${i}_${children[i]}`
-          node = parseString('' + children[i], textProps)
-        }
-        if (node) {
-          nodes.push(node)
-        }
-      }
-      if (nodes.length > 0) {
-        children = (
-          <Text
-            {...textRootProps}
-          >
-            {nodes}
-          </Text>
-        )
-      }
+    else {
+      children = (
+        <Text
+          {...textRootProps}
+        >
+          {children}
+        </Text>
+      )
     }
 
     if (!children) {
